@@ -31,7 +31,7 @@ wheels/
 *.egg
 MANIFEST
 
-backend/app/core/config.py
+/backend/app/core/config.py
 
 .env
 .venv
