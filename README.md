@@ -270,7 +270,7 @@ Visit `http://localhost:8000/docs` for complete interactive API documentation wi
 
 ```env
 # Database
-DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/aurahr
+DATABASE_URL=your-mongodb-url
 
 # Security
 SECRET_KEY=your-super-secret-jwt-key-here
