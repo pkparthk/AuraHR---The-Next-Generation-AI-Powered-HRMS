@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     API_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
         
-    DATABASE_URL: str = "mongodb+srv://pkparthk:EzjTIXRhHbBFyECo@cluster0.p3u0yym.mongodb.net/aurahr"  
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
     DATABASE_NAME: str = "aurahr"
     
     EMBEDDING_MODEL_NAME: str = "sentence-transformers/msmarco-distilbert-base-v4"
