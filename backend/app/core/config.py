@@ -5,6 +5,7 @@ import secrets
 from functools import lru_cache
 
 class Settings(BaseSettings):
+    PYTHON_VERSION: Optional[str] = None  # For documentation purposes
     PROJECT_NAME: str = "AuraHR"
     VERSION: str = "1.0.0" 
     DESCRIPTION: str = "AI-Powered Human Resource Management System"
