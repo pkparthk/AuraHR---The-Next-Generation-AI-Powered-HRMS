@@ -394,13 +394,15 @@ class AIService:
             return ""
     
     def extract_entities_from_resume(self, text: str) -> Dict[str, Any]:
-        """Extract entities from resume text using spaCy."""
-        if not self.nlp:
-            raise ValueError("spaCy model not initialized")
+        """Extract entities from resume text using spaCy or fallback methods."""
         
-        doc = self.nlp(text)
+        # Extract skills using keyword matching (always works)
+        skills = self._extract_skills_from_text(text)
         
-        # Extract named entities
+        # Extract contact information (always works - includes name)
+        contact_info = self._extract_contact_info(text)
+        
+        # Initialize default entities structure
         entities = {
             "PERSON": [],
             "ORG": [],
@@ -410,15 +412,27 @@ class AIService:
             "PERCENT": []
         }
         
-        for ent in doc.ents:
-            if ent.label_ in entities:
-                entities[ent.label_].append(ent.text.strip())
+        # Try spaCy if available
+        if self.nlp:
+            try:
+                doc = self.nlp(text)
+                
+                for ent in doc.ents:
+                    if ent.label_ in entities:
+                        entities[ent.label_].append(ent.text.strip())
+                        
+                logger.debug(f"✅ spaCy entity extraction successful: {len(entities['PERSON'])} persons found")
+                        
+            except Exception as e:
+                logger.warning(f"⚠️  spaCy processing failed, using fallback: {e}")
+                
+        else:
+            logger.info("ℹ️  spaCy not available, using fallback name extraction")
         
-        # Extract skills using keyword matching (basic implementation)
-        skills = self._extract_skills_from_text(text)
-        
-        # Extract contact information
-        contact_info = self._extract_contact_info(text)
+        # If spaCy didn't find names, use our reliable fallback
+        if not entities["PERSON"] and contact_info.get("name"):
+            entities["PERSON"] = [contact_info["name"]]
+            logger.debug(f"✅ Fallback name extraction found: {contact_info['name']}")
         
         return {
             "entities": entities,
@@ -677,7 +691,27 @@ class AIService:
             
         lines = text.strip().split('\n')
         
-        # Strategy 1: Look for name at the very beginning first
+        # Strategy 1: Look for ALL CAPS name at the beginning (very common in resumes)
+        for line in lines[:5]:  # Check first 5 lines
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Check for all caps name pattern
+            all_caps_match = re.match(r'^([A-Z][A-Z\s]{5,30})$', line)
+            if all_caps_match:
+                potential_name = all_caps_match.group(1).strip()
+                # Ensure it's 2-3 words and looks like a name
+                words = potential_name.split()
+                if (2 <= len(words) <= 3 and 
+                    all(2 <= len(word) <= 15 for word in words) and
+                    not any(keyword in potential_name.lower() for keyword in [
+                        'resume', 'curriculum', 'cv', 'vitae', 'engineer', 'developer', 'manager'
+                    ])):
+                    # Convert to proper case
+                    return ' '.join(word.capitalize() for word in words)
+        
+        # Strategy 2: Look for name at the very beginning (proper case)
         first_words = text.strip().split()[:10]  # First 10 words
         for i in range(len(first_words) - 1):
             if i + 1 < len(first_words):
@@ -689,7 +723,7 @@ class AIService:
                     ])):
                     return potential_name
         
-        # Strategy 2: Look for clean name patterns in first few lines, skipping artifacts
+        # Strategy 3: Look for clean name patterns in first few lines, skipping artifacts
         for line in lines[:10]:
             line = line.strip()
             if not line or len(line) < 3:
@@ -699,7 +733,8 @@ class AIService:
             if any(keyword in line.lower() for keyword in [
                 'resume', 'cv', 'curriculum', 'email', 'phone', 'address', '@', 'http',
                 'vidyalaya', 'school', 'college', 'university', 'cbse', 'board', 'class',
-                'standard', 'grade', 'xii', 'x', '12th', '10th', 'education', 'qualification'
+                'standard', 'grade', 'xii', 'x', '12th', '10th', 'education', 'qualification',
+                'engineer', 'developer', 'manager', 'analyst'
             ]):
                 continue
             
@@ -713,7 +748,7 @@ class AIService:
                 ]) and len(potential_name) <= 30:
                     return potential_name
         
-        # Strategy 3: Look for "Name:" patterns in the text
+        # Strategy 4: Look for "Name:" patterns in the text
         name_patterns = [
             r'Name\s*:\s*([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})*)',
             r'Full Name\s*:\s*([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})*)',
@@ -724,7 +759,7 @@ class AIService:
             if match:
                 return match.group(1).strip()
         
-        # Strategy 4: Look for name patterns near email (people often put name near email)
+        # Strategy 5: Look for name patterns near email (people often put name near email)
         if '@' in text:
             # Find the area around email
             email_match = re.search(r'([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})', text)
@@ -745,7 +780,7 @@ class AIService:
                 if name_match:
                     return name_match.group(1).strip()
         
-        # Strategy 5: Fallback - look anywhere in first 500 characters
+        # Strategy 6: Fallback - look anywhere in first 500 characters
         first_part = text[:500]
         name_match = re.search(r'\b([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,})\b', first_part)
         if name_match:

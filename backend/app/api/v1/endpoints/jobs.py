@@ -121,7 +121,7 @@ async def process_resume_background_task(
         else:
             extracted_text = ""
         
-        # Extract entities and skills (with fallback if spaCy fails)
+        # Extract entities and skills (now works even without spaCy)
         entities_data = {}
         try:
             entities_data = ai_service.extract_entities_from_resume(extracted_text)
@@ -175,19 +175,28 @@ async def process_resume_background_task(
             "status": CandidateStatus.NEW
         }
         
+        # Extract candidate name from resume - prioritize contact_info.name over person_names
+        candidate_name = None
+        
+        # First, try to get name from contact_info which is more reliable
+        if entities_data.get("contact_info") and entities_data["contact_info"].get("name"):
+            candidate_name = entities_data["contact_info"]["name"].strip()
+        
+        # If no name in contact_info, fall back to person_names
+        elif entities_data.get("person_names") and len(entities_data["person_names"]) > 0:
+            # Use the first person name found in the resume
+            candidate_name = entities_data["person_names"][0].strip()
+        
+        # Update name if we found a valid one
+        if candidate_name and len(candidate_name) > 2:
+            update_data["name"] = candidate_name
+        
         # Add extracted contact info if found
         if entities_data.get("contact_info"):
             if entities_data["contact_info"].get("email"):
                 update_data["email"] = entities_data["contact_info"]["email"]
             if entities_data["contact_info"].get("phone"):
                 update_data["phone"] = entities_data["contact_info"]["phone"]
-        
-        # Extract candidate name from resume entities (use first person name found)
-        if entities_data.get("person_names") and len(entities_data["person_names"]) > 0:
-            # Use the first person name found in the resume
-            candidate_name = entities_data["person_names"][0]
-            if len(candidate_name.strip()) > 2:  # Ensure it's a valid name
-                update_data["name"] = candidate_name.strip()
         
         await db.candidates.update_one(
             {"_id": candidate_data["_id"]},
