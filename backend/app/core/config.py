@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     ENABLE_ML_CLASSIFIER: bool = True
     ENABLE_ENTITY_EXTRACTION: bool = True
     
+    #  Initialize AI services on startup
+    INIT_AI_ON_STARTUP: bool = True 
+    
     DEBUG: bool = False
     RELOAD: bool = True
     ENABLE_DOCS: bool = True

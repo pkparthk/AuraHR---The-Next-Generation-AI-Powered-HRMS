@@ -74,18 +74,19 @@ async def startup_event():
         # Continue startup even if DB fails for debugging
     
     try:
-        print("🔄 Initializing AI service...")
-        # Initialize the global AI service instance with timeout (load models, etc.)
         from app.services.ai_service import ai_service
-        import asyncio
-        await asyncio.wait_for(ai_service.initialize(), timeout=60.0)  # 60 second timeout
-        print("✅ AI service initialized successfully!")
-    except asyncio.TimeoutError:
-        print("⚠️ AI service initialization timed out (60s)")
-        print("🔄 Server will continue without AI features...")
+        # Optionally initialize AI in background to avoid blocking startup and
+        # reduce peak memory usage during deployment on constrained hosts.
+        if settings.INIT_AI_ON_STARTUP:
+            print("🔄 Scheduling AI service initialization in background task...")
+            import asyncio
+            # Schedule initialization but don't block startup. Any exceptions
+            # will be logged by the AIService initializer.
+            asyncio.create_task(_initialize_ai_service(ai_service))
+        else:
+            print("ℹ️ Skipping AI model initialization on startup (INIT_AI_ON_STARTUP=False)")
     except Exception as e:
-        print(f"⚠️ AI service initialization failed: {e}")
-        print("🔄 Server will continue without AI features...")
+        print(f"⚠️ Could not schedule AI initialization: {e}")
     
     print(f"🚀 {settings.PROJECT_NAME} started successfully!")
     print(f"📚 API Documentation: http://localhost:8000/docs")
@@ -95,6 +96,19 @@ async def shutdown_event():
     """Clean up connections on shutdown."""
     await close_mongo_connection()
     print("👋 AuraHR shutdown complete")
+
+
+async def _initialize_ai_service(ai_service):
+    """Helper coroutine to initialize AI service with internal timeout and logging."""
+    try:
+        import asyncio
+        print("🔄 AI background initializer starting...")
+        await asyncio.wait_for(ai_service.initialize(), timeout=120.0)
+        print("✅ AI service initialized successfully (background)!")
+    except asyncio.TimeoutError:
+        print("⚠️ AI service background initialization timed out (120s). Continuing without AI features.")
+    except Exception as e:
+        print(f"⚠️ AI service background initialization failed: {e}")
 
 @app.get("/")
 async def root():
