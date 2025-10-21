@@ -4,8 +4,9 @@ services:
     env: python
     region: oregon
     plan: starter
-    buildCommand: "cd backend && pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
+    rootDir: backend
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "PYTHONPATH=. uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
     healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
@@ -13,9 +14,9 @@ services:
       - key: LOG_LEVEL
         value: INFO
       - key: CHROMA_PERSIST_DIRECTORY
-        value: /opt/render/project/backend/chroma_db
+        value: ./chroma_db
       - key: UPLOAD_DIR
-        value: /opt/render/project/backend/uploads
+        value: ./uploads
       - key: SKIP_AI_INIT
         value: "false"
       - key: ENABLE_SPACY_PROCESSING
@@ -32,3 +33,5 @@ services:
         sync: true
       - key: GOOGLE_API_KEY
         sync: true
+      - key: PYTHON_VERSION
+        value: "3.11.10"
