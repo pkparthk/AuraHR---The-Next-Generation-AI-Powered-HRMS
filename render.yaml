@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: aurahr-backend
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: "cd backend && pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: CHROMA_PERSIST_DIRECTORY
+        value: /opt/render/project/backend/chroma_db
+      - key: UPLOAD_DIR
+        value: /opt/render/project/backend/uploads
+      - key: SKIP_AI_INIT
+        value: "false"
+      - key: ENABLE_SPACY_PROCESSING
+        value: "true"
+      - key: ENABLE_GEMINI_FALLBACK
+        value: "true"
+      - key: ENABLE_ML_CLASSIFIER
+        value: "true"
+      - key: ENABLE_DOCS
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: true
+      - key: GOOGLE_API_KEY
+        sync: true
