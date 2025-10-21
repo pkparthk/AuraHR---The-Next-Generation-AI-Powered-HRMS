@@ -1,0 +1,1 @@
+# AuraHR - The Next-Generation AI-Powered HRMS
