@@ -25,13 +25,12 @@ _Enterprise-grade Human Resource Management System powered by cutting-edge AI te
 - [🔧 Configuration](#-configuration)
 - [🚢 Deployment](#-deployment)
 - [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
 
 ## 🎬 Demo Video
 
 A short product demo video is available to help you quickly understand AuraHR's core features (recruitment, AI screening, performance dashboards, and development plans).
 
-- Local copy (if included in the repository): `archive/demo/aurahr-demo.mp4`
+- Local copy (if included in the repository): `aurahr-demo-video.mp4`
 - Video link: https://drive.google.com/file/d/1D5WMNyfPaUsWGriTvKjdA-IWPIJPngoh/view?usp=sharing
 
 ## 🌟 Overview
