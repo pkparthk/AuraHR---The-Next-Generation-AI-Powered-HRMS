@@ -143,10 +143,23 @@ export const useJobStore = create<JobState>((set, get) => ({
         })
       );
 
+      // Sort candidates by AI score in descending order (highest first)
+      const sortedCandidates = candidatesWithAiScores.sort((a, b) => {
+        // Use resumeScore if available, fallback to matchScore
+        const scoreA = (a as any).resumeScore || a.matchScore || 0;
+        const scoreB = (b as any).resumeScore || b.matchScore || 0;
+
+        // Convert to percentage if needed (normalize to 0-100 scale for comparison)
+        const normalizedScoreA = scoreA > 1 ? scoreA : scoreA * 100;
+        const normalizedScoreB = scoreB > 1 ? scoreB : scoreB * 100;
+
+        return normalizedScoreB - normalizedScoreA;
+      });
+
       set((state) => ({
         candidates: {
           ...state.candidates,
-          [jobId]: candidatesWithAiScores,
+          [jobId]: sortedCandidates,
         },
         loading: false,
       }));

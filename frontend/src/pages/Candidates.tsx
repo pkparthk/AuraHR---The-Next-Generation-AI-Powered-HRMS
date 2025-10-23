@@ -59,14 +59,27 @@ export default function Candidates() {
     fetchJobs();
   }, [fetchCandidates, fetchJobs]);
 
-  // Filter candidates based on status
-  const filteredCandidates = candidates.filter((candidate) => {
-    if (showRejected) {
-      return candidate.status === "rejected";
-    } else {
-      return candidate.status !== "rejected";
-    }
-  });
+  // Filter and sort candidates based on status and AI score
+  const filteredCandidates = candidates
+    .filter((candidate) => {
+      if (showRejected) {
+        return candidate.status === "rejected";
+      } else {
+        return candidate.status !== "rejected";
+      }
+    })
+    .sort((a, b) => {
+      // Sort by AI score in descending order (highest first)
+      // Use resumeScore if available, fallback to matchScore
+      const scoreA = (a as any).resumeScore || a.matchScore || 0;
+      const scoreB = (b as any).resumeScore || b.matchScore || 0;
+
+      // Convert to percentage if needed (normalize to 0-100 scale for comparison)
+      const normalizedScoreA = scoreA > 1 ? scoreA : scoreA * 100;
+      const normalizedScoreB = scoreB > 1 ? scoreB : scoreB * 100;
+
+      return normalizedScoreB - normalizedScoreA;
+    });
 
   const getJobTitle = (jobPostingId: string) => {
     const job = jobs.find((j) => j._id === jobPostingId);

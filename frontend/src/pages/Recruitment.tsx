@@ -440,13 +440,26 @@ export default function Recruitment() {
   const selectedJobCandidates = selectedJobId
     ? candidates[selectedJobId] || []
     : [];
-  const filteredCandidates = selectedJobCandidates.filter(
-    (candidate) =>
-      // Filter out rejected candidates and apply search query
-      candidate.status !== "rejected" &&
-      (candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        candidate.email.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredCandidates = selectedJobCandidates
+    .filter(
+      (candidate) =>
+        // Filter out rejected candidates and apply search query
+        candidate.status !== "rejected" &&
+        (candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          candidate.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+    .sort((a, b) => {
+      // Sort by AI score in descending order (highest first)
+      // Use resumeScore if available, fallback to matchScore
+      const scoreA = (a as any).resumeScore || a.matchScore || 0;
+      const scoreB = (b as any).resumeScore || b.matchScore || 0;
+
+      // Convert to percentage if needed (normalize to 0-100 scale for comparison)
+      const normalizedScoreA = scoreA > 1 ? scoreA : scoreA * 100;
+      const normalizedScoreB = scoreB > 1 ? scoreB : scoreB * 100;
+
+      return normalizedScoreB - normalizedScoreA;
+    });
 
   // Check if user has permission to create jobs or upload resumes
   const canManageJobs = user?.role === "recruiter" || user?.role === "admin";
