@@ -33,6 +33,100 @@ A short product demo video is available to help you quickly understand AuraHR's 
 - Local copy (if included in the repository): `aurahr-demo-video.mp4`
 - Video link: https://drive.google.com/file/d/1D5WMNyfPaUsWGriTvKjdA-IWPIJPngoh/view?usp=sharing
 
+## 📸 Demo Screenshots
+
+### 👩‍💼 Admin Dashboard
+
+<div align="center">
+  <img src="Demo Screenshots/AdminDashboard.png" alt="Admin Dashboard - System Overview" width="800"/>
+  <p><em>Comprehensive admin dashboard with system-wide analytics, user management, and KPI tracking</em></p>
+</div>
+
+### 👩‍🎯 Recruiter Dashboard
+
+<div align="center">
+  <img src="Demo Screenshots/RecruiterDashboard.png" alt="Recruiter Dashboard" width="800"/>
+  <p><em>AI-powered recruitment dashboard with candidate screening and matching insights</em></p>
+</div>
+
+### 👨‍💼 Manager Dashboard
+
+<div align="center">
+  <img src="Demo Screenshots/ManagerDashboard.png" alt="Manager Dashboard - Team Analytics" width="800"/>
+  <p><em>Manager dashboard showing team performance metrics and department insights</em></p>
+</div>
+
+### 👩‍🎯 Recruiter Interface
+
+#### Job Management
+
+<div align="center">
+  <img src="Demo Screenshots/JobsPageForRecruiter.png" alt="Jobs Page for Recruiter" width="800"/>
+  <p><em>Recruiter job management interface with posting creation and candidate pipeline</em></p>
+</div>
+
+#### AI Screening Interface
+
+<div align="center">
+  <img src="Demo Screenshots/AIScreening.png" alt="AI Screening Interface" width="800"/>
+  <p><em>Conversational AI screening interface for automated candidate interviews</em></p>
+</div>
+
+### 📊 Admin Interface
+
+#### Recruitment Process (Admin View)
+
+<div align="center">
+  <img src="Demo Screenshots/RecruitmentPageForAdmin.png" alt="Recruitment Page for Admin" width="800"/>
+  <p><em>Admin oversight of recruitment processes with system-wide metrics</em></p>
+</div>
+
+#### Employee Management (Admin View)
+
+<div align="center">
+  <img src="Demo Screenshots/EmployeePageForAdmin.png" alt="Employee Page for Admin" width="800"/>
+  <p><em>Admin view of employee management with detailed profiles and analytics</em></p>
+</div>
+
+### 📊 Manager Interface
+
+#### Team Analytics Dashboard
+
+<div align="center">
+  <img src="Demo Screenshots/TeamAnalyticsDashboard.png" alt="Team Analytics Dashboard" width="800"/>
+  <p><em>Advanced team analytics with performance trends and skill gap analysis</em></p>
+</div>
+
+#### Team Development
+
+<div align="center">
+  <img src="Demo Screenshots/TeamDevelopement.png" alt="Team Development" width="800"/>
+  <p><em>AI-powered learning and development planning interface</em></p>
+</div>
+
+#### Performance Management
+
+<div align="center">
+  <img src="Demo Screenshots/PerformanceManagement.png" alt="Performance Management" width="800"/>
+  <p><em>Employee performance tracking with AI-generated insights and recommendations</em></p>
+</div>
+
+### 👩‍💻 Employee Experience Interface
+
+#### Employee Dashboard
+
+<div align="center">
+  <img src="Demo Screenshots/EmployeeDashboard.png" alt="Employee Dashboard" width="800"/>
+  <p><em>Personal employee dashboard with performance metrics and career goals</em></p>
+</div>
+
+#### Document Management
+
+<div align="center">
+  <img src="Demo Screenshots/EmployeeDocs.png" alt="Employee Documents" width="800"/>
+  <p><em>Employee document management and file handling interface</em></p>
+</div>
+
 ## 🌟 Overview
 
 AuraHR is a comprehensive, production-ready Human Resource Management System that leverages cutting-edge AI technologies to automate recruitment processes, foster personalized employee growth, and provide data-driven insights for modern enterprises.
@@ -356,4 +450,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Built with ❤️ by Parth Kothari
 
 </div>
-
