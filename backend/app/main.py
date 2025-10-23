@@ -14,8 +14,8 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description=settings.DESCRIPTION,
-    openapi_url="/openapi.json",  # Keep OpenAPI at root level
-    redirect_slashes=False  # Disable automatic trailing slash redirects
+    openapi_url="/openapi.json", 
+    redirect_slashes=False  
 )
 
 # Set up CORS - More comprehensive configuration
@@ -50,15 +50,14 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 # Mount static files for uploaded documents
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
-# Add CORS preflight handler
+
 @app.options("/{path:path}")
 async def cors_preflight_handler(path: str):
     """Handle CORS preflight requests."""
     return {}
 
-# Include API router - mount both v1 and direct API paths for compatibility
-app.include_router(api_router, prefix=settings.API_STR)  # /api/v1/*
-app.include_router(api_router, prefix="/api")  # /api/* for frontend compatibility
+app.include_router(api_router, prefix=settings.API_STR)  
+app.include_router(api_router, prefix="/api")  
 
 @app.on_event("startup")
 async def startup_event():
@@ -75,13 +74,11 @@ async def startup_event():
     
     try:
         from app.services.ai_service import ai_service
-        # Optionally initialize AI in background to avoid blocking startup and
-        # reduce peak memory usage during deployment on constrained hosts.
+        
         if settings.INIT_AI_ON_STARTUP:
             print("🔄 Scheduling AI service initialization in background task...")
             import asyncio
-            # Schedule initialization but don't block startup. Any exceptions
-            # will be logged by the AIService initializer.
+        
             asyncio.create_task(_initialize_ai_service(ai_service))
         else:
             print("ℹ️ Skipping AI model initialization on startup (INIT_AI_ON_STARTUP=False)")

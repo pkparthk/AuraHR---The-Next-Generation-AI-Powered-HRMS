@@ -257,8 +257,7 @@ class AIService:
                 "recommendation": self._get_recommendation_from_score(final_scores[i])
             }
             results.append(result)
-        
-        # Sort by score (highest first)
+                
         results.sort(key=lambda x: x['score'], reverse=True)
         
         return results
