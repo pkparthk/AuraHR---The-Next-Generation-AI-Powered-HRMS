@@ -17,7 +17,7 @@ services:
         value: ./chroma_db
       - key: UPLOAD_DIR
         value: ./uploads
-      - key: SKIP_AI_INIT
+      - key: INIT_AI_ON_STARTUP
         value: "false"
       - key: ENABLE_SPACY_PROCESSING
         value: "true"
