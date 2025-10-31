@@ -28,28 +28,19 @@ PDF_EXTRACTION_PRIORITY = ['PyPDF2', 'pdfplumber', 'pymupdf']
 class AIService:
     """Centralized AI service for all AI-related operations."""
     
-    def __init__(self):
-    # Primary AI stack
-        self.embedding_model = None  # sentence-transformers/msmarco-distilbert-base-v4
-        self.chroma_client = None    # Vector database for embeddings
+    def __init__(self):    
+        self.embedding_model = None  
+        self.chroma_client = None    
         self.chroma_collection = None
-        self.scoring_classifier = None  # Optional ML classifier
-        
-    # Optional components
-        self.nlp = None  # spaCy model (optional - for entity extraction)
-        
-    # Legacy/fallback components
-        self.gemini_model = None  # Only used for chat features now
-        
-    # System state
+        self.scoring_classifier = None          
+        self.nlp = None          
+        self.gemini_model = None         
         self._initialized = False
-        
-    # Cache directories
+            
         self.embed_cache_dir = os.path.join(settings.CHROMA_PERSIST_DIRECTORY, "embeddings")
         self.model_cache_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models")
         self.classifier_path = os.path.join(self.model_cache_dir, "scorer.joblib")
-        
-    # Ensure directories exist
+            
         os.makedirs(self.embed_cache_dir, exist_ok=True)
         os.makedirs(self.model_cache_dir, exist_ok=True)
     
@@ -58,27 +49,23 @@ class AIService:
         if self._initialized:
             return
         
-        try:
-            # Primary initialization - HuggingFace SentenceTransformer
+        try:            
             logger.info("🚀 Loading HuggingFace sentence transformer model (PRIMARY)...")
             self.embedding_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
             logger.info(f"✅ HuggingFace model '{settings.EMBEDDING_MODEL_NAME}' loaded successfully")
-            
-            # Initialize ChromaDB client
+                        
             logger.info("🔗 Connecting to ChromaDB...")
             self.chroma_client = chromadb.PersistentClient(
                 path=settings.CHROMA_PERSIST_DIRECTORY,
                 settings=Settings(anonymized_telemetry=False)
             )
-            
-            # Get or create collection for resumes
+                        
             self.chroma_collection = self.chroma_client.get_or_create_collection(
                 name="resumes",
                 metadata={"hnsw:space": "cosine"}
             )
             logger.info("ChromaDB initialized successfully")
-            
-            # Optional: spaCy for entity extraction
+                        
             if ENABLE_SPACY_PROCESSING:
                 logger.info("🔤 Loading spaCy model (optional)...")
                 try:
@@ -90,8 +77,7 @@ class AIService:
             else:
                 logger.info("ℹ️  spaCy processing disabled by configuration")
                 self.nlp = None
-            
-            # Legacy/fallback: Google Gemini (chat features)
+                        
             if ENABLE_GEMINI_FALLBACK and settings.GOOGLE_API_KEY:
                 try:
                     logger.info("🤖 Initializing Google Gemini (fallback for chat)...")
@@ -107,8 +93,7 @@ class AIService:
             else:
                 logger.info("ℹ️  Gemini API key not provided - using HuggingFace only mode")
                 self.gemini_model = None
-            
-            # Optional ML classifier
+                        
             if ENABLE_ML_CLASSIFIER and os.path.exists(self.classifier_path):
                 try:
                     self.scoring_classifier = joblib.load(self.classifier_path)
@@ -209,8 +194,7 @@ class AIService:
                 candidate_embeddings.append(None)
                 to_compute_texts.append(candidate.get('text', ''))
                 to_compute_indices.append(i)
-        
-        # Compute missing embeddings in batch
+            
         if to_compute_texts:
             new_embeddings = self.embed_texts(to_compute_texts)
             for idx, embedding in zip(to_compute_indices, new_embeddings):
@@ -218,24 +202,18 @@ class AIService:
                 # Cache the embedding
                 candidate_id = str(candidates[idx].get('id', f'temp_{idx}'))
                 self._save_embedding(candidate_id, embedding)
-        
-        # Convert to numpy array
-        candidate_embeddings = np.array(candidate_embeddings)
-        
-        # Calculate similarity scores
-        similarity_scores = self._cosine_similarity_to_score(job_embedding, candidate_embeddings)
-        
-        # Use classifier if available and requested
-        if use_classifier and self.scoring_classifier is not None:
-            try:
-                # Create feature matrix (can be extended with more features)
-                features = similarity_scores.reshape(-1, 1)
                 
-                # Get probability scores from classifier
+        candidate_embeddings = np.array(candidate_embeddings)
+                
+        similarity_scores = self._cosine_similarity_to_score(job_embedding, candidate_embeddings)
+                
+        if use_classifier and self.scoring_classifier is not None:
+            try:                
+                features = similarity_scores.reshape(-1, 1)
+                                
                 probability_scores = self.scoring_classifier.predict_proba(features)[:, 1]
                 final_scores = probability_scores
                 
-                # Calculate confidence based on distance from decision boundary
                 confidences = np.abs(probability_scores - 0.5) * 2.0
                 
             except Exception as e:
@@ -245,8 +223,7 @@ class AIService:
         else:
             final_scores = similarity_scores
             confidences = np.clip((similarity_scores - 0.4) / 0.6, 0.1, 0.99)
-        
-        # Create results
+                
         results = []
         for i, candidate in enumerate(candidates):
             result = {
@@ -279,8 +256,7 @@ class AIService:
     def extract_text_from_pdf(self, file_path: str) -> str:
         """Extract text from PDF file - optimized for production."""
         text = ""
-        
-    # Primary PDF extraction method: PyPDF2
+            
         if 'PyPDF2' in PDF_EXTRACTION_PRIORITY:
             try:
                 import PyPDF2
@@ -290,21 +266,18 @@ class AIService:
                         page_text = page.extract_text()
                         if page_text:
                             text += page_text + "\n"
-                
-                # If we got reasonable text, clean and return it
-                if len(text.strip()) > 100:  # Reasonable amount of text
+                                
+                if len(text.strip()) > 100:  
                     logger.debug(f"✅ PDF extracted successfully with PyPDF2: {len(text)} chars")
                     return self._clean_extracted_text(text)
                 
             except Exception as e:
                 logger.warning(f"⚠️  PyPDF2 extraction failed, trying alternatives: {e}")
-        
-        # Fallback methods (if PyPDF2 fails and advanced extraction enabled)
+                
         if not ENABLE_ADVANCED_PDF:
             logger.warning("Advanced PDF extraction disabled - returning basic text")
             return self._clean_extracted_text(text) if text.strip() else ""
-        
-    # Secondary method: pdfplumber
+            
         if 'pdfplumber' in PDF_EXTRACTION_PRIORITY:
             try:
                 import pdfplumber
@@ -322,11 +295,10 @@ class AIService:
                 logger.warning("⚠️  pdfplumber not available - install with: pip install pdfplumber")
             except Exception as e:
                 logger.warning(f"⚠️  pdfplumber extraction failed: {e}")
-        
-    # Tertiary method: pymupdf
+            
         if 'pymupdf' in PDF_EXTRACTION_PRIORITY:
             try:
-                import fitz  # pymupdf
+                import fitz  
                 pdf_document = fitz.open(file_path)
                 for page_num in range(len(pdf_document)):
                     page = pdf_document.load_page(page_num)
@@ -343,8 +315,7 @@ class AIService:
                 logger.warning("⚠️  pymupdf not available - install with: pip install pymupdf")
             except Exception as e:
                 logger.warning(f"⚠️  pymupdf extraction failed: {e}")
-        
-        # All extraction methods failed
+                
         logger.error(f"❌ All PDF text extraction methods failed for: {file_path}")
         return self._clean_extracted_text(text) if text.strip() else ""
     
@@ -355,13 +326,11 @@ class AIService:
         try:
             from docx import Document
             doc = Document(file_path)
-            
-            # Extract from paragraphs
+                        
             for paragraph in doc.paragraphs:
                 if paragraph.text.strip():
                     text += paragraph.text + "\n"
-            
-            # Extract from tables
+                        
             for table in doc.tables:
                 for row in table.rows:
                     row_text = []
@@ -371,8 +340,7 @@ class AIService:
                             row_text.append(cell_text)
                     if row_text:
                         text += " | ".join(row_text) + "\n"
-            
-            # Extract from headers and footers
+                        
             for section in doc.sections:
                 # Header
                 if section.header:
@@ -523,9 +491,9 @@ class AIService:
         
         # Extract email with comprehensive error correction
         email_patterns = [
-            r'envelpe([pkA-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})',  # Fix "envelpe" prefix with 'p'
-            r'envelope([pkA-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})',  # Fix "envelope" prefix
-            r'\b([pkA-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})\b',  # Standard pattern
+            r'envelpe([pkA-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})',  
+            r'envelope([pkA-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})', 
+            r'\b([pkA-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,})\b',  
         ]
         
         # Also look for common email corruption patterns in PDF text

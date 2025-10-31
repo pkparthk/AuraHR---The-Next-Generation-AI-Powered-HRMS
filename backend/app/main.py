@@ -9,7 +9,6 @@ from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 from app.services.ai_service import AIService
 
-# Create FastAPI application
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -18,7 +17,6 @@ app = FastAPI(
     redirect_slashes=False  
 )
 
-# Set up CORS - More comprehensive configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS + [
@@ -44,12 +42,9 @@ app.add_middleware(
     expose_headers=["*"]
 )
 
-# Create upload directory if it doesn't exist
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
-# Mount static files for uploaded documents
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
-
 
 @app.options("/{path:path}")
 async def cors_preflight_handler(path: str):
@@ -69,8 +64,7 @@ async def startup_event():
         await connect_to_mongo()
         print("✅ MongoDB connected successfully!")
     except Exception as e:
-        print(f"❌ Failed to connect to MongoDB: {e}")
-        # Continue startup even if DB fails for debugging
+        print(f"❌ Failed to connect to MongoDB: {e}")        
     
     try:
         from app.services.ai_service import ai_service

@@ -41,20 +41,16 @@ export function CandidateCard({
   console.log("resumeS3Key:", candidate.resumeS3Key);
   console.log("All candidate fields:", Object.keys(candidate));
 
-  // Handle different matchScore formats - could be 0-1 float, 0-100 integer, or missing
   let matchPercentage = 0;
   let isProcessing = false;
   const rawScore =
     (candidate as any).matchScore ?? (candidate as any).match_score;
 
   if (rawScore !== undefined && rawScore !== null) {
-    if (rawScore === 0 || rawScore === 0.0) {
-      // Score of 0 might mean still processing
+    if (rawScore === 0 || rawScore === 0.0) {      
       isProcessing = true;
       matchPercentage = 0;
-    } else {
-      // If score is > 1, assume it's already a percentage (0-100)
-      // If score is <= 1, assume it's a decimal (0-1) and convert to percentage
+    } else {      
       matchPercentage =
         rawScore > 1 ? Math.round(rawScore) : Math.round(rawScore * 100);
     }

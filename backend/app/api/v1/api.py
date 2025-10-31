@@ -3,7 +3,6 @@ from app.api.v1.endpoints import auth, jobs, employees, candidates, chat, public
 
 api_router = APIRouter()
 
-# Include all endpoint routers - matching PRD API specification
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(jobs.router, prefix="/jobs", tags=["recruitment"])
 api_router.include_router(employees.router, prefix="/employees", tags=["employee-development"])
